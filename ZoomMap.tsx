@@ -7,8 +7,9 @@
 
 import React, { useState } from 'react';
 import {
-  StyleSheet, View,
+  StyleSheet, View,  PanResponder, PanResponderInstance
 } from 'react-native';
+import Slider from '@react-native-community/slider';
 
 import {  scaleLinear, scaleBand, scaleSequential, interpolateCool, min, max, geoPath, geoCentroid, geoBounds, geoEquirectangular } from 'd3';
 import { DataPoint, originalData } from './Data';
@@ -29,6 +30,20 @@ const AnimatedPath = Animated.createAnimatedComponent(Path);
 
 function ZoomMap(): JSX.Element {
   const [tooltip, setTooltip] = useState<{x: number, y: number, value: number, paddockName: string, triangleSide: string} | null>(null);
+  const [scale, setScale] = useState(1);
+  const [pan, setPan] = useState({x: 0, y: 0});
+  const panResponder: PanResponderInstance = PanResponder.create({
+    onStartShouldSetPanResponder: () => true,
+    onPanResponderMove: (event, gestureState) => {
+      if (scale > 1) {
+        console.log(gestureState);
+        setPan({
+          x: gestureState.dx,
+          y: gestureState.dy,
+        });
+      }
+    },
+  });
   const GRAPH_HEIGHT = 300;
   const GRAPH_WIDTH = 370;
   const bottomPadding = 50;
@@ -141,7 +156,7 @@ function ZoomMap(): JSX.Element {
   return (
     <View>
       <Animated.View style={styles.chartContainer}>
-        <Svg width={GRAPH_WIDTH} height={GRAPH_HEIGHT + (bottomPadding * 2)}>
+        <Svg style={{ transform: [{ scale }, { translateX: pan.x }, { translateY: pan.y }] }} width={GRAPH_WIDTH} height={GRAPH_HEIGHT + (bottomPadding * 2)}>
         <G transform={`translate(0, ${bottomPadding})`}>
           {paddocksMap.polygons.map((feature, index) => {
             const paddock = sortedData.find(d => d.paddockName === paddocksMap.paddocks[index].name);
@@ -179,20 +194,7 @@ function ZoomMap(): JSX.Element {
           /> */}
 
           </G>
-          <Defs>
-            <LinearGradient id="colorScaleGradient" x1="0" y1="0" x2="1" y2="0">
-              <Stop offset="0%" stopColor={colorScale(barGraph.minValue)} />
-              <Stop offset="100%" stopColor={colorScale(barGraph.maxValue)} />
-            </LinearGradient>
-          </Defs>
-          <Rect
-            x={0}
-            y={GRAPH_HEIGHT + bottomPadding + 10} // Adjust as needed
-            width={GRAPH_WIDTH}
-            height={20} // Adjust as needed
-            fill="url(#colorScaleGradient)"
-          />
-          {tooltip && (
+          {/* {tooltip && (
               <>
                 <Rect
                   x={tooltip.triangleSide === 'right' ? tooltip.x - (TRIANGLE_SIZE/2) - TOOLTIP_WIDTH : tooltip.x + (TRIANGLE_SIZE/2)}
@@ -232,8 +234,35 @@ function ZoomMap(): JSX.Element {
                   COVER: {tooltip.value} kg DM/ha
                 </Text>
               </>
-            )}
+            )} */}
         </Svg>
+        
+      </Animated.View>
+      <Animated.View style={styles.chartContainer}>
+      <Svg width={GRAPH_WIDTH} height={(bottomPadding * 2)}>
+        <Defs>
+            <LinearGradient id="colorScaleGradient" x1="0" y1="0" x2="1" y2="0">
+              <Stop offset="0%" stopColor={colorScale(barGraph.minValue)} />
+              <Stop offset="100%" stopColor={colorScale(barGraph.maxValue)} />
+            </LinearGradient>
+          </Defs>
+          <Rect
+            x={0}
+            y={bottomPadding + 10} // Adjust as needed
+            width={GRAPH_WIDTH}
+            height={20} // Adjust as needed
+            fill="url(#colorScaleGradient)"
+          />
+        </Svg>
+        <Slider
+          style={{ width: 200, height: 40 }}
+          minimumValue={1}
+          maximumValue={4}
+          minimumTrackTintColor="#FFFFFF"
+          maximumTrackTintColor="#000000"
+          value={scale}
+          onValueChange={setScale}
+        />
       </Animated.View>
     </View>
   );
