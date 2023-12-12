@@ -10,8 +10,13 @@
     "test": "jest"
   },
   "dependencies": {
+    "d3": "^7.8.5",
     "react": "18.2.0",
-    "react-native": "0.73.0"
+    "react-native": "0.73.0",
+    "react-native-reanimated": "^3.6.1",
+    "react-native-redash": "^18.1.1",
+    "react-native-svg": "^14.1.0",
+    "react-native-wizard": "^2.1.1"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
@@ -21,6 +26,7 @@
     "@react-native/eslint-config": "^0.73.1",
     "@react-native/metro-config": "^0.73.2",
     "@react-native/typescript-config": "^0.73.1",
+    "@types/d3": "^7.4.3",
     "@types/react": "^18.2.6",
     "@types/react-test-renderer": "^18.0.0",
     "babel-jest": "^29.6.3",
